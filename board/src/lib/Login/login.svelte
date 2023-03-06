@@ -59,9 +59,15 @@
     token.subscribe((token: any) => {
       tokenValue = token;
     });
+    own_user_id.subscribe((temp: any) => {
+      own_user_id_value = temp;
+      console.log(tokenValue + "TTTTTTTTT");
+    });
+    own_user_id.set(data.user_id);
 
     document.cookie = "tokenValue=" + tokenValue;
     document.cookie = "username=" + user_name;
+    document.cookie = "userid=" + own_user_id_value;
 
     console.log("Der Cookie ist:" + document.cookie);
     token.set(tokenValue);

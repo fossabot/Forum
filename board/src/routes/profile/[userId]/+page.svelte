@@ -4,7 +4,6 @@
   import { own_user_id, token } from "../../../lib/Login/login";
   import { ip } from "../../../lib/const.js"
   import { FormGroup, Input, FormText, Label, Button } from "sveltestrap";
-  import { comment } from "postcss";
   export let data: any;
   let postList: any = [];
   let page = 0;
@@ -38,7 +37,6 @@
   onMount(async () => {
     await checkLoggedIn();
     await subStores();
-    await loadAvatar();
     console.log(avatarSrc)
     getUserDetails();
     getFirstPostList();
@@ -104,28 +102,37 @@
     console.log(res)
   };
 
-async function loadAvatar() {
-  console.log(ip + "/api/v1/file/profile/"+ data.userId)
-  console.log(tokenValue)
-  const res = await fetch(ip + "/api/v1/file/profile/"+ data.userId, {
-    method: "GET",
-    headers: { 
-        Authorization: "Bearer " + tokenValue,
-      },
-  })
-  const blob = await res.blob();
+
+onMount(async () => { 
+  let bearerToken = await getCookie("tokenValue");
+  console.log(bearerToken)
+  let requestOptions:any = {
+  method: 'GET',
+  headers: { "Authorization": "Bearer " + bearerToken,},
+  redirect: 'follow'
+};
+
+const path = window.location.pathname.split("/");
+const userid = path[path.length-1];
+
+
+
+
+  async function loadAvatar() {
+const res = await fetch("http://127.0.0.1:8080/api/v1/file/profile/"+userid, requestOptions)
+const blob = await res.blob();
   const reader = new FileReader();
   reader.readAsDataURL(blob);
   reader.onloadend = (event) => {
     if(event.target && event.target.result) {
-      avatarSrc = event.target.result;
-      console.log("Success")
+      avatarSrc = event.target.result; 
     }
-  }
-  
-
-  
 }
+}
+loadAvatar();
+console.log(avatarSrc)
+})
+
 
   onMount(async () => {
     window.onscroll = function (ev) {
@@ -149,13 +156,13 @@ async function loadAvatar() {
     <h2>Username: {user_name}</h2>
 
     {#if avatarSrc}
-      <img src={avatarSrc} alt="Avatar">
+      <img src={avatarSrc } alt="Avatar" width="250" height="300">
     {/if}
     {#if own_user_id_value == data.userId}
     
     <FormGroup>
       <Input type="file" name="file" id="AvatarFile" bind:this={avatar_file} on:change={handleFileChange} accept="image.png, image.jpeg, image.jpg"/>
-      <Button color="primary" on:click={upload_avatar}>Hochladen</Button>
+      <Button color="primary" on:click={upload_avatar} on:click={() => location.reload()} >Hochladen</Button>
     </FormGroup>
     {/if}
 
